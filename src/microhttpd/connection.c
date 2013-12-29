@@ -2445,10 +2445,15 @@ MHD_connection_handle_idle (struct MHD_Connection *connection)
             }
           if (((MHD_YES == connection->read_closed) &&
                (0 == connection->read_buffer_offset)) ||
-              (connection->version == NULL) ||
-              (0 != strcasecmp (MHD_HTTP_VERSION_1_1, connection->version)))
+
+              (((connection->version == NULL) ||
+                (0 != strcasecmp (MHD_HTTP_VERSION_1_1, connection->version)))) &&
+              ((end == NULL) || 
+               ((end != NULL) && (0 != strcasecmp (end, "keep-alive")))))
             {
-              /* http 1.0, version-less requests cannot be pipelined */
+              /* http 1.0, version-less requests cannot be pipelined 
+               * without keep-alive header
+               */
               MHD_connection_close (connection, MHD_REQUEST_TERMINATED_COMPLETED_OK);
               MHD_pool_destroy (connection->pool);
               connection->pool = NULL;
